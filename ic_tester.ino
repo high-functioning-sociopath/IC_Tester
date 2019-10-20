@@ -2,8 +2,8 @@
 #include <Keypad.h> //4x4
 #include <Wire.h> // Library for I2C communication
 
-#define HIGH 1
-#define LOW 0
+//#define HIGH 1
+//#define LOW 0
 
 //TTL Gates
 #define QuadNAND "7400"
@@ -33,6 +33,16 @@ byte colPins[COLS] = {5, 4, 3, 2};
 //insert the decided pins 
 int Pin14[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};             // 14 Pin IC
 int Pin16[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};        //16 Pin IC
+
+//input A and B of truth table
+const char *A[] = {"LOW","LOW","HIGH","HIGH"};
+const char *B[] = {"LOW","HIGH","LOW","HIGH"};
+
+const char *OR_output[4] = {"LOW","HIGH","HIGH","HIGH"};
+const char *NAND_output[4] = {"HIGH","HIGH","HIGH","LOW"};
+const char *NOR_output[4] = {"HIGH","LOW","LOW","LOW"};
+const char *AND_output[4] = {"LOW","LOW","LOW","HIGH"};
+
 
 String IC_Val = "";
 
@@ -102,18 +112,61 @@ void loop(){
   
 }
 
+//define input and ouptut pins for each IC
 void QuadNAND(){
-  
+//Gate 1: //i/p 1: 
+          //i/p 2:
+          //o/p 1:
+//Gate 2: //i/p 1: 
+          //i/p 2:
+          //o/p 1:
+//Gate 3: //i/p 1: 
+          //i/p 2:
+          //o/p 1:
+//Gate 4: //i/p 1: 
+          //i/p 2:
+          //o/p 1:
+//input array = [] -> pin definition
+//output array = [] -> pin definition
+//Set VCC and GROUND
+//set pinmode as output for i/p array
+//and input for o/p array
+//call check TT(i/p array, size of input array, o/p array, size of output array)
+ 
 }
-void QuadNOR(){
-  
+void QuadNOR(){}
+void QuadAND(){}
+void QuadOR(){}
+void HexaNOT(){}
+
+void checkTT(int IC_input[],int n,int IC_output[],int m, char expected_op[]){
+  //IC_input -> array of IC's i/p pins
+  //n -> size of the array
+
+  //gateStatus -> 1: good, 0-> faulty
+  int gateStatus[m] = {};
+
+  //send o/p on i/p pins
+  for(int i = 0; i < (n-1); i++){
+    for(int j = 0; j < m; j++){  //m-> o/p = conditions..0 to 3
+      digitalWrite(IC_input[i],A[j]);
+      digitalWrite(IC_input[i+1],B[j]);
+      delay(300);
+      if(digitalRead(IC_output[j]) == expected_op[j] ){
+        //continue
+        gateStatus[j] = 1;
+      }
+      else{
+        //Gate is faulty...move to the next gate
+        gateStatus[j] = 0;
+        break;
+      }
+     }
+   }
+
+  displayStatus(gateStatus[],m);
 }
-void QuadAND(){
-  
-}
-void QuadOR(){
-  
-}
-void HexaNOT(){
-  
+
+void displayStatus(int gateStatus[],q){
+  //print the status of each gate on LCD
 }
