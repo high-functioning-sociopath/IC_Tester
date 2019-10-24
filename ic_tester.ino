@@ -162,6 +162,7 @@ void loop(){
 
 //***********************************************************************************************************************//
 
+            
 void QuadNAND(){
 int IC_input[8] = {33,35,30,32,39,41,36,38};    
 int IC_output[4] = {37,34,43,40};
@@ -182,10 +183,83 @@ for (int p = 0; p < 8; p++){
 }
 checkTT(IC_input[],8,IC_output[],4,NAND_output[]);
 }
-void QuadNOR(){}
-void QuadAND(){}
-void QuadOR(){}
+            
+            
+            
+void QuadNOR(){
+    int IC_input[8] = {35,37,32,34,39,41,36,38};    
+    int IC_output[4] = {33,30,39,36};
+    int Vcc = 31;
+    int Gnd = 42;
+
+     pinmode(Vcc,OUTPUT);
+     pinmode(Gnd,OUTPUT);
+
+     digitalWrite(Vcc,HIGH);
+     digitalWrite(Gnd,LOW);
+
+     for (int p = 0; p < 8; p++){
+        pinmode(IC_input[p],OUTPUT);
+        if(p <4){
+            pinmode(IC_output[p],INPUT);
+            }
+          }
+      checkTT(IC_input[],8,IC_output[],4,AND_output[]);
+      }
+            
+            
+            
+            
+void QuadAND(){
+    int IC_input[8] = {33,35,30,32,39,41,36,38};    
+    int IC_output[4] = {37,34,43,40};
+    int Vcc = 31;
+    int Gnd = 42;
+
+     pinmode(Vcc,OUTPUT);
+     pinmode(Gnd,OUTPUT);
+
+     digitalWrite(Vcc,HIGH);
+     digitalWrite(Gnd,LOW);
+
+     for (int p = 0; p < 8; p++){
+        pinmode(IC_input[p],OUTPUT);
+        if(p <4){
+            pinmode(IC_output[p],INPUT);
+            }
+          }
+      checkTT(IC_input[],8,IC_output[],4,AND_output[]);
+      }
+            
+            
+void QuadOR(){{
+    int IC_input[8] = {33,35,30,32,39,41,36,38};    
+    int IC_output[4] = {37,34,43,40};
+    int Vcc = 31;
+    int Gnd = 42;
+
+     pinmode(Vcc,OUTPUT);
+     pinmode(Gnd,OUTPUT);
+
+     digitalWrite(Vcc,HIGH);
+     digitalWrite(Gnd,LOW);
+
+     for (int p = 0; p < 8; p++){
+        pinmode(IC_input[p],OUTPUT);
+        if(p <4){
+            pinmode(IC_output[p],INPUT);
+            }
+          }
+      checkTT(IC_input[],8,IC_output[],4,OR_output[]);
+      }
+            
+            
+            
+            
 void HexaNOT(){}
+            
+            
+            
 
 void checkTT(int IC_input[],int n,int IC_output[],int m, char expected_op[]){
   //IC_input -> array of IC's i/p pins
@@ -217,4 +291,13 @@ void checkTT(int IC_input[],int n,int IC_output[],int m, char expected_op[]){
 
 void displayStatus(int gateStatus[],q){
   //print the status of each gate on LCD
+      length = len(gateStatus)
+      for(int i = 0 , i < length , i++ ){
+        if(gateStatus[i] == 1){
+          lcd.print("GATE ",i+1," OKAY")
+        }
+        else{
+          lcd.print("GATE ",i+1," NOT OKAY")
+        }
+      }
 }
