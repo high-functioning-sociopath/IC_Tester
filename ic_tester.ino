@@ -9,7 +9,8 @@
 #define QuadNOR "7402"
 #define QuadAND "7408"
 #define QuadOR "7432"
-#define HexaNOT "7404"                                          
+#define HexaNOT "7404" 
+#define QuadD_FF "7475"      //74LS175 IC - Quad Dtype Gated Flip Flop
 //*******************************************************************************************************//
                                               // IC_I/O & TRUTH TABLE
                                               
@@ -93,6 +94,9 @@ void loop(){
       }
       else if(IC_Val == HexaNOT){
         HexaNOT();
+      }
+      else if(IC_Val == QuadD_FF){
+        QuadD_FlipFlop();
       }
       else{
         //IC does not exist
@@ -181,7 +185,7 @@ for (int p = 0; p < 8; p++){
     pinmode(IC_output[p],INPUT);
   }
 }
-checkTT(IC_input[],8,IC_output[],4,NAND_output[]);
+checkTT(IC_input[],8,IC_output[],4,0,NAND_output[],"logicGate");
 }
             
             
@@ -204,7 +208,7 @@ void QuadNOR(){
             pinmode(IC_output[p],INPUT);
             }
           }
-      checkTT(IC_input[],8,IC_output[],4,AND_output[]);
+      checkTT(IC_input[],8,IC_output[],4,0,AND_output[],"logicGate");
       }
             
             
@@ -228,7 +232,7 @@ void QuadAND(){
             pinmode(IC_output[p],INPUT);
             }
           }
-      checkTT(IC_input[],8,IC_output[],4,AND_output[]);
+      checkTT(IC_input[],8,IC_output[],4,0,AND_output[],"logicGate");
       }
             
             
@@ -250,54 +254,101 @@ void QuadOR(){{
             pinmode(IC_output[p],INPUT);
             }
           }
-      checkTT(IC_input[],8,IC_output[],4,OR_output[]);
+      checkTT(IC_input[],8,IC_output[],4,0,OR_output[],"logicGate");
       }
-            
-            
-            
+                                
             
 void HexaNOT(){}
+
+void QuadD_FlipFlop(){
+  //https://www.uni-kl.de/elektronik-lager/417744 - Datasheet
+  int Data_Pins[4] = {36,38,39,37}; //D0,D1,D2,D3    
+  int Q_op[4] = {32,42,43,33}; // Q0,Q1,Q2,Q3
+  int Qbar_op[4] = {34,40,41,35}; // complement of (Q0,Q1,Q2,Q3)
+  int Vcc = 31;
+  int Gnd = 44;
+  int Mreset = 30;
+  int clk = 45;
+  
+  pinmode(Vcc,OUTPUT);
+  pinmode(Gnd,OUTPUT);
+  pinmode(Mreset,OUTPUT);
+  pinmode(clk,OUTPUT);
+  
+  digitalWrite(Vcc,HIGH);
+  digitalWrite(Gnd,LOW);
+  digitalWrite(Clk,HIGH);
+
+  for (int p = 0; p < 4; p++){
+      pinmode(Data_Pins[p],OUTPUT);
+      pinmode(Q_op[p],INPUT);
+      pinmode(Qbar_op[p],INPUT);
+  }
+  checkTT(Data_Pins[],4,IC_output[],4,Qbar_op[],Data_Pins[],"d_ff");
+ }
             
             
             
 
-void checkTT(int IC_input[],int n,int IC_output[],int m, char expected_op[]){
+void checkTT(int IC_input[],int n,int IC_output[],int m,int IC_OP2[], char expected_op[],type){
   //IC_input -> array of IC's i/p pins
   //n -> size of the array
 
   //gateStatus -> 1: good, 0-> faulty
   int gateStatus[m] = {};
 
-  //send o/p on i/p pins
-  for(int i = 0; i < (n-1); i++){
-    for(int j = 0; j < m; j++){  //m-> o/p = conditions..0 to 3
-      digitalWrite(IC_input[i],A[j]);
-      digitalWrite(IC_input[i+1],B[j]);
-      delay(300);
-      if(digitalRead(IC_output[j]) == expected_op[j] ){
-        //continue
-        gateStatus[j] = 1;
-      }
-      else{
-        //Gate is faulty...move to the next gate
-        gateStatus[j] = 0;
-        break;
-      }
-     }
-   }
-
-  displayStatus(gateStatus[],m);
+  if(type == "logicGate"){
+        //send o/p on i/p pins
+        for(int i = 0; i < (n-1); i++){
+          for(int j = k; j < m; j++){  //m-> o/p = conditions of truth table!
+            digitalWrite(IC_input[i],A[j]);
+            digitalWrite(IC_input[i+1],B[j]);
+            delay(300);
+            if(digitalRead(IC_output[j]) == expected_op[j] ){
+              //continue
+              gateStatus[j] = 1;
+             }
+            else{
+              //Gate is faulty...move to the next gate
+              gateStatus[j] = 0;
+              break;
+             }
+          }
+        }
+  }
+  
+  else if(type == "d_ff"){
+       //send o/p on i/p pins
+       char *Din = ["LOW","HIGH"];
+        for(int i = 0; i < n ; i++){
+          for(int j = 0; j < 2; j++){  //m-> o/p = conditions of truth table!
+            digitalWrite(IC_input[i],Din[j]);
+            
+            delay(300);
+            if( digitalRead(IC_output[i]) == expected_op[i] && digitalRead(IC_OP2[i]) != expected_op[i] ){
+              //continue
+              gateStatus[i] = 1;
+             }
+            else{
+              //Gate is faulty...move to the next gate
+              gateStatus[i] = 0;
+              break;
+             }
+          }
+        }
+  }
+  displayStatus(gateStatus[]);
 }
 
-void displayStatus(int gateStatus[],q){
+void displayStatus(int gateStatus[]){
   //print the status of each gate on LCD
-      length = len(gateStatus)
-      for(int i = 0 , i < length , i++ ){
+      len = length(gateStatus);
+      for(int i = 0 , i < len , i++ ){
         if(gateStatus[i] == 1){
-          lcd.print("GATE ",i+1," OKAY")
+          lcd.print("GATE ",i+1," OK");
         }
         else{
-          lcd.print("GATE ",i+1," NOT OKAY")
+          lcd.print("GATE ",i+1," FAULTY");
         }
       }
 }
